@@ -1,6 +1,6 @@
 FROM php:8.2-cli
 
-# Cài extension cần thiết
+# Cài extension
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     unzip \
@@ -11,24 +11,26 @@ RUN apt-get update && apt-get install -y \
 # Cài composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set workdir
 WORKDIR /app
 
 # Copy code
 COPY . .
 
-# Copy .env example
+# Tạo .env từ example
 COPY .env.example .env
 
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Cấp quyền cho Laravel
+RUN chmod -R 777 storage bootstrap/cache
+
+# Cài dependency (QUAN TRỌNG: thêm --no-scripts)
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Generate key
 RUN php artisan key:generate
 
+# Cache config (tối ưu)
+RUN php artisan config:cache
 
-# Expose port
 EXPOSE 10000
 
-# Start server
 CMD php artisan serve --host=0.0.0.0 --port=10000
