@@ -17,8 +17,15 @@ WORKDIR /app
 # Copy code
 COPY . .
 
+# Copy .env example
+COPY .env.example .env
+
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
+
+# Generate key
+RUN php artisan key:generate
+
 
 # Expose port
 EXPOSE 10000
